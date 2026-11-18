@@ -19,6 +19,10 @@
         <div class="hero-actions">
             <a href="{{ url_for('register') }}" class="btn-primary">Start tracking free</a>
             <a href="{{ url_for('login') }}" class="btn-ghost">Sign in</a>
+            <button type="button" class="btn-ghost btn-video" id="open-video-modal"
+                    aria-haspopup="dialog" aria-controls="video-modal">
+                <span class="btn-video-icon" aria-hidden="true">▶</span> See how it works
+            </button>
         </div>
     </div>
     <div class="hero-visual">
@@ -89,4 +93,123 @@
     </div>
 </section>
 
+{# Replace data-video-id with your own YouTube video ID #}
+<div class="video-modal" id="video-modal" role="dialog" aria-modal="true"
+     aria-label="See how Spendly works" data-video-id="ysz5S6PUM-U" hidden>
+    <div class="video-modal-dialog">
+        <button type="button" class="video-modal-close" id="close-video-modal" aria-label="Close video">&times;</button>
+        <div class="video-modal-frame">
+            <iframe id="video-modal-iframe" title="How Spendly works" src="about:blank"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block head %}
+<style>
+    .btn-video { font-family: var(--font-body); cursor: pointer; }
+    .btn-video-icon { font-size: 0.7rem; margin-right: 0.35rem; color: var(--accent); }
+
+    .video-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        background: rgba(15, 15, 15, 0.7);
+    }
+    .video-modal[hidden] { display: none; }
+
+    .video-modal-dialog {
+        position: relative;
+        width: 100%;
+        max-width: 880px;
+        background: var(--paper-card);
+        border-radius: var(--radius-lg);
+        padding: 0.75rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .video-modal-frame {
+        position: relative;
+        aspect-ratio: 16 / 9;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        background: var(--ink);
+    }
+    .video-modal-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+    .video-modal-close {
+        position: absolute;
+        top: -0.9rem;
+        right: -0.9rem;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--paper-card);
+        color: var(--ink);
+        font-size: 1.4rem;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: background 0.2s, color 0.2s;
+    }
+    .video-modal-close:hover { background: var(--ink); color: var(--paper); }
+
+    body.modal-open { overflow: hidden; }
+
+    @media (max-width: 600px) {
+        .video-modal { padding: 1rem; }
+        .video-modal-close { top: -0.75rem; right: -0.5rem; }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var modal = document.getElementById('video-modal');
+    var iframe = document.getElementById('video-modal-iframe');
+    var openBtn = document.getElementById('open-video-modal');
+    var closeBtn = document.getElementById('close-video-modal');
+    if (!modal || !iframe || !openBtn || !closeBtn) return;
+
+    var videoId = modal.getAttribute('data-video-id');
+
+    function openModal() {
+        // Load the video only when opened, with autoplay
+        iframe.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(videoId) + '?autoplay=1&rel=0';
+        modal.hidden = false;
+        document.body.classList.add('modal-open');
+        closeBtn.focus();
+    }
+
+    function closeModal() {
+        // Clearing the src unloads the player, so the video stops completely
+        iframe.src = 'about:blank';
+        modal.hidden = true;
+        document.body.classList.remove('modal-open');
+        openBtn.focus();
+    }
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+
+    // Close when clicking the dark overlay (outside the dialog)
+    modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeModal();
+    });
+
+    // Close with the Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !modal.hidden) closeModal();
+    });
+})();
+</script>
 {% endblock %}
